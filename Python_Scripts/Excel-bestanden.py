@@ -1,5 +1,26 @@
 import pandas as pd
 
+#Gebruik deze functie om excel bestanden samen te voegen. Voordat je dit gebruikt comment wel de df_merged.loc regel uit
+#Je zou ook de regel aan kunnen passen om op lege velden punten te plaatsen
+def bestanden_samenvoegen(main_excel_bestand, excel_bestand_2, gemerged_bestand, merge_on_column1, merge_on_column2):
+    df1 = pd.read_excel(main_excel_bestand, dtype=str)
+    df2 = pd.read_excel(excel_bestand_2, dtype=str)
+
+    #Verwijder mogelijke spaties in de columns waarmee je merged
+    df1[merge_on_column1] = df1[merge_on_column1].astype(str).str.strip()
+    df2[merge_on_column2] = df2[merge_on_column2].astype(str).str.strip()
+
+    #Merge de bestanden
+    df_merged = pd.merge(df1, df2, left_on=merge_on_column1, right_on=merge_on_column2, how='left')
+
+    #Plaatst punten waar lege cellen zitten in de rijen met de GM codes
+    df_merged.loc[df1[merge_on_column1].str.startswith("GM", na=False), :] = df_merged.fillna('.')
+
+    #Sla het resultaat op
+    df_merged.to_excel(gemerged_bestand, index=False)
+
+    return gemerged_bestand
+
 #V1 van de toevoeging van PC4 codes, deze functie voegt rijen toe op basis van unieke combinaties van de columns
 #Dit kan er wel voor zorgen dat je veel en veel meer rijen krijgt dan je orgineel had
 def add_pc4_to_dataset_as_rows (dataset, locatie_dataset, locatie_code_column, locatie_code_column_locatie_dataset):
@@ -53,7 +74,10 @@ def drop_columns (dataset, column_names):
 
 # drop_columns("Python_Scripts/Bewerkte_datasets/Leefbaarometer-scores.xlsx" , ["afw", "fys", "onv", "soc", "vrz", "won"])
 
-# add_pc4_to_dataset_as_rows("Python_Scripts/Bewerkte_datasets/Leefbaarometer-scores.xlsx", "Python_Scripts/Bewerkte_datasets/2b-GWB2023_PC6.xlsx", 
+# bestanden_samenvoegen("Python_Scripts/Ruwe_datasets/NED_2019.xlsx", "Python_Scripts/Ruwe_datasets/Huisartsenaanbod in 2019 - Kaart op gemeenteniveau.xlsx", 
+#                             "Python_Scripts/Bewerkte_datasets/zorgaanbod_2019.xlsx", "Codering_3", "geo_id")
+
+# add_pc4_to_dataset_as_rows("Python_Scripts/Ruwe_datasets/NED_2019.csv", "Python_Scripts\Ruwe_datasets\Huisartsenaanbod in 2019 - Kaart op gemeenteniveau.csv", 
 #                    "bu_code", "BuurtCode")
 
 # file_name = "Python_Scripts/Bewerkte_datasets/2b-GWB2023_PC6.xlsx"
